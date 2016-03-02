@@ -38,7 +38,7 @@ static NSString * URL_PREDICATE = @"(http|https)://((\\w)*|([0-9]*)|([-|_])*)+([
  * @return MessageManager the singleton object
  */
 +(MessageManager*) sharedManager{
-
+    
     static dispatch_once_t predicate;
     static MessageManager *messageParser = nil;
     dispatch_once(&predicate, ^{
@@ -54,7 +54,7 @@ static NSString * URL_PREDICATE = @"(http|https)://((\\w)*|([0-9]*)|([-|_])*)+([
  * @return messagse the message string object
  */
 -(NSString*) messagetoJsonString:(NSString*)message{
-
+    
     if(message ==nil || message.length <= 0){
         return nil;
     }
@@ -73,41 +73,40 @@ static NSString * URL_PREDICATE = @"(http|https)://((\\w)*|([0-9]*)|([-|_])*)+([
     NSArray * links = [self getLinks:array];
     
     NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
-    if(mentions!=nil && [mentions count] >0){
-        [dict setValue:mentions forKey:MENTIONS];
-    }
-    if(emoticons!=nil && [emoticons count] > 0){
-        [dict setValue:emoticons forKey:EMOTICONS];
-    }
-    
     if(links && [links count] >0){
         NSMutableArray * array = [[NSMutableArray alloc] init];
         
         for(NSString * url in links){
             NSString* title = [self getTitleWithURL:url];
-            NSMutableDictionary * dict  = [[NSMutableDictionary alloc]initWithDictionary:@{URL:url, TITLE:title}];
-            [array addObject:dict];
+            if(title !=nil){
+                NSMutableDictionary * dict  = [[NSMutableDictionary alloc]initWithDictionary:@{URL:url, TITLE:title}];
+                [array addObject:dict];
+            }
         }
-      
-        
         [dict setValue:array forKey:LINKS];
-
+        
     }
+    
+    if(mentions!=nil && [mentions count] >0){
+        [dict setValue:mentions forKey:MENTIONS];
+    }
+    
+    if(emoticons!=nil && [emoticons count] > 0){
+        [dict setValue:emoticons forKey:EMOTICONS];
+    }
+    
     
     if([dict count] >0){
         NSError *error = nil;
         NSData* json = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
-        
         NSString * jsonString = [[NSString alloc ] initWithData:json encoding:NSUTF8StringEncoding];
-        
         return [Util sanitizeString:jsonString];
         
-       
     }else{
         return nil;
     }
     
-   
+    
 }
 
 /**
@@ -136,13 +135,13 @@ static NSString * URL_PREDICATE = @"(http|https)://((\\w)*|([0-9]*)|([-|_])*)+([
         
         NSString * newString = [emoticon stringByReplacingOccurrencesOfString:@"(" withString:@""];
         newString = [newString stringByReplacingOccurrencesOfString:@")" withString:@""];
-      
+        
         BOOL valid = [Util isAlphaNumeric:newString];
         //add only the valid emoticons
         if(valid){
-             [newArray addObject:newString];
+            [newArray addObject:newString];
         }
-       
+        
     }
     return newArray;
 }
@@ -180,16 +179,16 @@ static NSString * URL_PREDICATE = @"(http|https)://((\\w)*|([0-9]*)|([-|_])*)+([
         NSString * subString = [htmlCode substringWithRange:NSMakeRange(range1.location + 7, range2.location - range1.location - 7)];
         if(subString)
             subString = (subString !=nil) ? [subString stringByReplacingOccurrencesOfString:@"\n" withString:@""] : subString;
-          subString = (subString !=nil) ? [subString stringByReplacingOccurrencesOfString:@"\t" withString:@""] : subString;
-          subString = (subString !=nil) ? [subString stringByReplacingOccurrencesOfString:@"\r" withString:@""] : subString;
-
+        subString = (subString !=nil) ? [subString stringByReplacingOccurrencesOfString:@"\t" withString:@""] : subString;
+        subString = (subString !=nil) ? [subString stringByReplacingOccurrencesOfString:@"\r" withString:@""] : subString;
+        
         if([subString length] > MAX_TITLE_LEN){
-            return [subString substringToIndex:MAX_TITLE_LEN];
+            subString = [subString substringToIndex:MAX_TITLE_LEN];
+            subString = [subString stringByAppendingString:@"..."];
         }
         return subString;
     }
     return nil;
-    
     
 }
 

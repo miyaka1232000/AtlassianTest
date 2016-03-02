@@ -23,9 +23,9 @@
     NSUInteger len = [jsonString length];
   
     
-    NSMutableString *result = [[NSMutableString alloc] initWithCapacity:(len-2)];
-    NSUInteger limit = len - 1;
-    for (NSUInteger i = 1; i < limit; ++i) {
+    NSMutableString *result = [[NSMutableString alloc] initWithCapacity:len];
+    NSUInteger limit = len;
+    for (NSUInteger i = 0; i < limit; ++i) {
         unichar character = [jsonString characterAtIndex:i];
         
         if (character == '\\') {
